@@ -101,8 +101,10 @@ model = dict(
             nms_across_levels=False,
             nms_pre=2000,
             nms_post=2000,
-            max_num=2000,
-            nms_thr=0.7,
+            # max_num=2000,
+            # nms_thr=0.7,
+            max_per_img  = 2000,
+            nms = dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
@@ -126,8 +128,10 @@ model = dict(
             nms_across_levels=False,
             nms_pre=2000,
             nms_post=2000,
-            max_num=2000,
-            nms_thr=0.7,
+            # max_num=2000,
+            # nms_thr=0.7,
+            max_per_img  = 2000,
+            nms = dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.75,
@@ -137,7 +141,7 @@ model = dict(
             )))
 # Dataset
 dataset_type = 'CocoDataset',
-data_root = 'data/TOD/'
+data_root = '/home/xjgao/Dataset/poc/Labeled_poc_8.12/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -170,17 +174,20 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type='CocoDataset',
-        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12',
+        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
+        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
         pipeline=train_pipeline,
         classes = ('203', '202', '302', '501', '201', '401', '204', '301',),
         ),
     val=dict(
-        type='TODSplitDataset',
-        ann_file='data/TOD/annotations/OSD_depth.json',
+        type='CocoDataset',
+        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
+        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
         pipeline=test_pipeline),
     test=dict(
-        type='TODSplitDataset',
-        ann_file='/research/d3/bqyang/object_localization_network/data/AutoStore/annotations/test.json',
+        type='CocoDataset',
+        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
+        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
         pipeline=test_pipeline))
 
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
@@ -202,5 +209,5 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = './work_dirs/bmask_project2/'
+work_dir = './'
 gpu_ids = range(0, 8)
