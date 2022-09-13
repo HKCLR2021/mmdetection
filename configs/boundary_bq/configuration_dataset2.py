@@ -1,7 +1,7 @@
 _base_ = [
-    '../_base_/datasets/coco_detection.py',
-    '../_base_/schedules/schedule_1x.py', 
-    '../_base_/default_runtime.py'
+    '/home/xjgao/mmdetection/configs/_base_/datasets/coco_detection.py',
+    '/home/xjgao/mmdetection/configs/_base_/schedules/schedule_1x.py', 
+    '/home/xjgao/mmdetection/configs/_base_/default_runtime.py'
 ]
 model = dict(
     type='FasterRCNN',
@@ -134,26 +134,32 @@ model = dict(
             nms = dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.75,
+            score_thr=0.7,
             nms=dict(type='nms', iou_threshold=0.7),
             max_per_img=100,
             mask_thr_binary=0.5
             )))
 # Dataset
-dataset_type = 'CocoDataset',
-data_root = '/home/xjgao/Dataset/poc/Labeled_poc_8.12/'
+dataset_type = 'CocoDataset'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+# use caffe img_norm
+# img_norm_cfg = dict(
+#     mean=[103.530, 116.280, 123.675], std=[1.0, 1.0, 1.0], to_rgb=False)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='Resize', img_scale=[(1333, 640), (1333, 672), (1333, 704), (1333, 736),
+                   (1333, 768), (1333, 800)],
+        multiscale_mode='value',
+        keep_ratio=True),
     dict(type='MinIoURandomCrop',min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3, bbox_clip_border=True),
     dict(type='Rotate', level=1, scale=1, center=None, img_fill_val=128, seg_ignore_label=255, prob=0.5, max_rotate_angle=30, random_negative_prob=0.5),
-    # dict(type='RandomAffine',max_rotate_degree=10.0, max_translate_ratio=0.1, scaling_ratio_range=(0.5, 1.5), max_shear_degree=2.0, border=(0, 0), border_val=(114, 114, 114), min_bbox_size=2, min_area_ratio=0.2, max_aspect_ratio=20, bbox_clip_border=True, skip_filter=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
+    dict(type='ColorTransform',level=1,prob=0.5),
+    dict(type='BrightnessTransform',level=1,prob=0.5),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
@@ -172,26 +178,27 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
-data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=2,
-    train=dict(
+train_A = dict(
         type='CocoDataset',
-        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
         ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
+        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
         pipeline=train_pipeline,
-        classes = ('203', '202', '302', '501', '201', '401', '204', '301',),
-        ),
+        classes = ('201', '202', '203', '204', '301', '302', '401', '501',),)
+train_B = dict(
+        type='CocoDataset',
+        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.16/dataset.json',
+        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.16/',
+        pipeline=train_pipeline,
+        classes = ('201', '202', '203', '204', '301', '302', '401', '501',),)
+data = dict(
+    train=[train_A, train_B],
     val=dict(
         type='CocoDataset',
-        img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
         ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
-        pipeline=test_pipeline),
-    test=dict(
-        type='CocoDataset',
         img_prefix='/home/xjgao/Dataset/poc/Labeled_poc_8.12/',
-        ann_file='/home/xjgao/Dataset/poc/Labeled_poc_8.12/dataset.json',
-        pipeline=test_pipeline))
+        pipeline=test_pipeline,
+        classes = ('203', '202', '302', '501', '201', '401', '204', '301',)
+        ))
 
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict(grad_clip=None)
@@ -209,8 +216,10 @@ log_config = dict(
            dict(type='TensorboardLoggerHook')])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = None
-resume_from = None
 workflow = [('train', 1)]
-work_dir = './'
-gpu_ids = range(0, 8)
+load_from = '/home/xjgao/InstanceSeg/checkpoints/mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth'
+resume_from = None
+
+
+
+

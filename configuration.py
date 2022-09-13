@@ -6,6 +6,16 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(
+        type='Rotate',
+        level=1,
+        scale=1,
+        center=None,
+        img_fill_val=128,
+        seg_ignore_label=255,
+        prob=0.5,
+        max_rotate_angle=30,
+        random_negative_prob=0.5),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(
         type='Normalize',
@@ -46,6 +56,16 @@ data = dict(
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
             dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(
+                type='Rotate',
+                level=1,
+                scale=1,
+                center=None,
+                img_fill_val=128,
+                seg_ignore_label=255,
+                prob=0.5,
+                max_rotate_angle=30,
+                random_negative_prob=0.5),
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(
                 type='Normalize',
@@ -260,5 +280,5 @@ model = dict(
             mask_thr_binary=0.5)))
 total_epochs = 36
 work_dir = './'
-gpu_ids = range(0, 1)
+gpu_ids = range(0, 2)
 auto_resume = False
